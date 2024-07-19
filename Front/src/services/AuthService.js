@@ -7,20 +7,21 @@ const API_URL = 'http://localhost:8080';
 export const register = async (userData) => {
   try {
     const response = await axios.post(`${API_URL}/auth/register`, userData);
-    return response.data; // Puedes devolver más información según lo que necesites
+    return response.data;
   } catch (error) {
-    throw new Error('Registration failed'); // Maneja el error según tu lógica
+    throw new Error('Registration failed');
   }
 };
 
 export const login = async (username, password) => {
   try {
-    const response = await axios.post(`${API_URL}/auth/login`, {
-      username,
-      password
-    });
+    const response = await axios.post(`${API_URL}/auth/login`, { username, password });
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token); // Almacena el token en localStorage
+      localStorage.setItem('token', response.data.token);
+
+      // Almacenar roles en localStorage
+      const roles = response.data.roles || [];
+      localStorage.setItem('roles', JSON.stringify(roles));
     }
     return response.data;
   } catch (error) {
@@ -29,7 +30,8 @@ export const login = async (username, password) => {
 };
 
 export const logout = () => {
-  localStorage.removeItem('token'); // Elimina el token al cerrar sesión
+  localStorage.removeItem('token');
+  localStorage.removeItem('roles');
 };
 
 export const authHeader = () => {
@@ -39,4 +41,9 @@ export const authHeader = () => {
   } else {
     return {};
   }
+};
+
+export const getRoles = () => {
+  const roles = localStorage.getItem('roles');
+  return roles ? JSON.parse(roles) : [];
 };

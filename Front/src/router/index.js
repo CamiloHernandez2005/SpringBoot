@@ -1,17 +1,19 @@
+// router/index.js
+
 import { createRouter, createWebHistory } from 'vue-router';
 import ProductList from '../components/ProductList.vue';
 import LoginComponent from '../components/LoginComponent.vue';
 import RegisterComponent from '@/components/RegisterComponent.vue';
 import BrandList from '@/components/BrandList.vue';
-import axios from 'axios';
-
+import UnauthorizedComponent from '@/components/Unauthorized.vue';
+import apiClient from '../axios-interceptor';
 
 const routes = [
   {
     path: '/home',
     name: 'ProductList',
     component: ProductList,
-    meta: { requiresAuth: true } // Define que esta ruta requiere autenticación
+    meta: { requiresAuth: true, roles: ['USER', 'ADMIN'] } // Define que esta ruta requiere autenticación y roles permitidos
   },
   {
     path: '/',
@@ -27,7 +29,14 @@ const routes = [
     path: '/brands',
     name: 'Brands',
     component: BrandList,
+    meta: { requiresAuth: true, roles: ['ADMIN'] } // Solo ADMIN puede acceder a /brands
   },
+  {
+    path: '/unauthorized',
+    name: 'Unauthorized',
+    component: UnauthorizedComponent
+  },
+  
   // Puedes añadir más rutas aquí según sea necesario
 ];
 
@@ -36,33 +45,41 @@ const router = createRouter({
   routes,
 });
 
-// Guard de navegación para verificar la autenticación
+// Guard de navegación para verificar la autenticación y roles
 router.beforeEach(async (to, from, next) => {
-  // Verificar si la ruta requiere autenticación
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    // Comprobar si el usuario está autenticado usando el token almacenado localmente
     const token = localStorage.getItem('token');
+    console.log('Token en localStorage:', token); // Verifica el token almacenado
+
     if (!token) {
-      // Si no hay token, redirige a la página de inicio de sesión
       next({ name: 'Login' });
     } else {
       try {
-        // Verificar la validez del token haciendo una solicitud al backend
-        await axios.get('http://localhost:8080/auth/verifyToken', {
+        const response = await apiClient.get('/auth/verifyToken', {
           headers: {
-            Authorization: `Bearer ${token}` // Agrega el token al encabezado Authorization
+            Authorization: `Bearer ${token}`
           }
         });
-        // Si la verificación es exitosa, permite acceder a la ruta protegida
-        next();
+
+        // Verifica la estructura de la respuesta
+        const roles = Array.isArray(response.data.roles) ? response.data.roles : [];
+        const allowedRoles = Array.isArray(to.meta.roles) ? to.meta.roles : [];
+
+        console.log('Roles obtenidos:', roles); // Verifica los roles obtenidos del backend
+        console.log('Roles permitidos:', allowedRoles); // Verifica los roles permitidos para la ruta
+
+        // Verifica si el usuario tiene al menos uno de los roles permitidos
+        if (allowedRoles.some(role => roles.includes(role))) {
+          next();
+        } else {
+          next('/unauthorized');
+        }
       } catch (error) {
         console.error('Error al verificar token:', error);
-        // Si hay un error o el token no es válido, redirige a la página de inicio de sesión
         next({ name: 'Login' });
       }
     }
   } else {
-    // Si la ruta no requiere autenticación, permite acceder directamente
     next();
   }
 });

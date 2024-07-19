@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/brands")
+@RequestMapping("/brands")
 public class BrandController {
+
     private final BrandService brandService;
 
     @Autowired
@@ -23,16 +24,16 @@ public class BrandController {
 
     @PostMapping
     public ResponseEntity<Object> brandRegister(@RequestBody Brand brand) {
-        return this.brandService.newBrand(brand);
+        return brandService.newBrand(brand);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateBrand(@PathVariable Long id, @RequestBody Brand brand) {
-        return this.brandService.updateBrand(id, brand);
+        return brandService.updateBrand(id, brand);
     }
 
-    @DeleteMapping(path = "{brandId}")
-    public ResponseEntity<Object> brandDelete(@PathVariable("brandId") Long id) {
-        return this.brandService.deleteBrand(id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> brandDelete(@PathVariable Long id) {
+        return brandService.deleteBrand(id);
     }
 }

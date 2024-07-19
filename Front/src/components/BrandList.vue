@@ -26,6 +26,7 @@ export default {
       dialogHeader: '',
       confirmDialog: false,
       brandToDelete: null,
+      errorMessage: '',
     };
   },
   async created() {
@@ -65,7 +66,12 @@ export default {
         this.displayDialog = false;
         await this.loadBrands();
       } catch (error) {
-        console.error('Error al guardar marca:', error);
+        if (error.response && error.response.status === 409) {
+          this.errorMessage = 'Ya existe una marca con ese nombre.';
+        } else {
+          console.error('Error al guardar marca:', error);
+          this.errorMessage = 'Error al guardar marca.';
+        }
       }
     },
     editBrand(rowData) {
@@ -96,6 +102,9 @@ export default {
       } catch (error) {
         console.error('Error al cerrar sesión:', error);
       }
+    },
+    clearErrorMessage() {
+      this.errorMessage = '';
     },
   },
 };
@@ -136,6 +145,12 @@ export default {
         <div>
           <label for="brandName">Nombre:</label>
           <InputText id="brandName" v-model="newBrand.name" type="text" required class="p-inputtext" />
+        </div>
+        <div v-if="errorMessage" class="alert alert-danger" role="alert">
+          {{ errorMessage }}
+          <button type="button" class="close" @click="clearErrorMessage">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <br>
         <button type="submit" class="p-button">{{ isEdit ? 'Actualizar' : 'Guardar' }}</button>

@@ -1,11 +1,12 @@
 package com.example.crud.brand;
 
-import com.example.crud.product.Product;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import com.example.crud.product.Product; // Asegúrate de importar la clase Product
 import java.util.Set;
 
 @Entity
-@Table
+@Table(name = "brands")
 public class Brand {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,9 +14,6 @@ public class Brand {
 
     @Column(unique = true, nullable = false)
     private String name;
-
-    @OneToMany(mappedBy = "brand")
-    private Set<Product> products;
 
     public Brand() {
     }
@@ -29,7 +27,6 @@ public class Brand {
         this.name = name;
     }
 
-    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -44,13 +41,5 @@ public class Brand {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Set<Product> getProducts() {
-        return products;
-    }
-
-    public void setProducts(Set<Product> products) {
-        this.products = products;
     }
 }

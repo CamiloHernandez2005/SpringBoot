@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.Period;
 
 @Entity
-@Table
+@Table(name = "products")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +21,12 @@ public class Product {
     @Transient
     private int antiquity;
 
+
     @ManyToOne
-    @JoinColumn(name = "brand_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "brand_id")
     private Brand brand;
+
+
 
     public Product() {
     }
@@ -43,7 +46,6 @@ public class Product {
         this.brand = brand;
     }
 
-    // Getters y Setters
     public Long getId() {
         return id;
     }

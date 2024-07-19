@@ -40,6 +40,9 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
+        // Determinar el rol basado en el correo electrónico
+        Role role = request.getUsername().endsWith("@emida.com") ? Role.ADMIN : Role.USER;
+
         // Crear y guardar el usuario
         User user = User.builder()
                 .username(request.getUsername())
@@ -47,7 +50,7 @@ public class AuthService {
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .country(request.getCountry())
-                .role(Role.USER)
+                .role(role)
                 .build();
 
         userRepository.save(user);
@@ -60,5 +63,4 @@ public class AuthService {
                 .token(token)
                 .build();
     }
-
 }
